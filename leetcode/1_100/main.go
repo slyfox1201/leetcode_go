@@ -284,7 +284,7 @@ var table = [][]int{
 	{0, 1, 2, 3},
 	{3, 3, 2, 3},
 	{3, 3, 2, 3},
-	{3, 3, 3, 3},
+	//{3, 3, 3, 3},
 }
 
 func myAtoi(str string) int {
@@ -681,7 +681,7 @@ func isValid2(s string) bool {
 
 // 使用 数组 模拟栈
 func isValid(s string) bool {
-	stack := make([]byte, 0, 1)
+	stack := make([]byte, 0)
 	getLeft := func(c byte) byte {
 		switch c {
 		case ')':
@@ -747,11 +747,19 @@ func generateParenthesis(n int) []string {
 
 		cur = append(cur, ')')
 		dfs(left, right-1, cur)
-		cur = cur[:len(cur)-1]
+		cur = cur[:len(cur)-1] // wjq 注：此句没有意义，可以删掉
 	}
 	dfs(n, n, []byte{})
 	return ans
 }
+
+// wjq 回溯杂谈
+// dfs是记录当前结果的cur，一般是可以直接使用切片，而不需要使用切片指针。因为cur的作用
+// 是用来向深层递归传递信息，一般情况下，它的长度是线性增加和线性减少，增加的次数和减少的
+// 次数是相同的。在append时创建新的底层数组，并不会对逻辑产生影响。换句话说，如果使用
+// 切片指针来记录信息，底层数组永远只有一个，尚且不会出现问题，使用普通切片，只会让深层
+// 递归创建新的数组，并不会影响当前层的逻辑，只是在创建新数组时，多了额外的开销。因此，从
+// 性能角度来看，使用切片指针更优。但普通切片会更方便，刷题足矣。
 
 // 23
 func mergeKLists(lists []*ListNode) *ListNode {
@@ -1132,6 +1140,19 @@ func searchInsert(nums []int, target int) int {
 	return left
 }
 
+func searchInsert1(nums []int, target int) int {
+	left, right := 0, len(nums)
+	for left < right {
+		mid := (left + right) >> 1
+		if nums[mid] < target {
+			left = mid + 1
+		} else {
+			right = mid
+		}
+	}
+	return left
+}
+
 // 36
 func isValidSudoku(board [][]byte) bool { // 位图太美了~~~
 	var row, col, block [9]uint16
@@ -1284,7 +1305,7 @@ func firstMissingPositive(nums []int) int {
 }
 
 // 42
-func trap(height []int) int {
+func trap1(height []int) int {
 	if len(height) == 0 {
 		return 0
 	}
@@ -1311,7 +1332,7 @@ func trap(height []int) int {
 	return ans
 }
 
-func trap1(height []int) (ans int) {
+func trap(height []int) (ans int) {
 	left, right := 0, len(height)-1
 	leftMax, rightMax := 0, 0
 	max := func(a, b int) int {
@@ -1357,7 +1378,7 @@ func multiply1(num1 string, num2 string) string {
 	if ansArr[0] == 0 {
 		idx = 1
 	}
-	fmt.Println(ansArr)
+	//fmt.Println(ansArr)
 	for ; idx < m+n; idx++ {
 		ans += strconv.Itoa(ansArr[idx])
 	}
@@ -1869,7 +1890,7 @@ func insert(intervals [][]int, newInterval []int) [][]int {
 // 58
 func lengthOfLastWord(s string) int {
 	s = strings.Trim(s, " ") //
-	s = strings.TrimSpace(s)
+	//s = strings.TrimSpace(s)
 	ans := strings.Split(s, " ")
 	return len(ans[len(ans)-1])
 }
@@ -1970,7 +1991,7 @@ func uniquePaths(m int, n int) int {
 }
 
 // 63
-func uniquePathsWithObstacles(obstacleGrid [][]int) int {
+func uniquePathsWithObstacles1(obstacleGrid [][]int) int {
 	m, n := len(obstacleGrid), len(obstacleGrid[0])
 	dp := make([][]int, m)
 	for i := range dp {
@@ -1997,6 +2018,26 @@ func uniquePathsWithObstacles(obstacleGrid [][]int) int {
 		}
 	}
 	return dp[m-1][n-1]
+}
+
+func uniquePathsWithObstacles(obstacleGrid [][]int) int {
+	m, n := len(obstacleGrid), len(obstacleGrid[0])
+	f := make([]int, n)
+	if obstacleGrid[0][0] == 0 {
+		f[0] = 1
+	}
+	for i := 0; i < m; i++ {
+		for j := 0; j < n; j++ {
+			if obstacleGrid[i][j] == 1 {
+				f[j] = 0
+				continue
+			}
+			if j - 1 >= 0 && obstacleGrid[i][j-1] == 0 {
+				f[j] += f[j-1]
+			}
+		}
+	}
+	return f[len(f)-1]
 }
 
 // 64
@@ -2317,7 +2358,7 @@ func minWindow(s string, t string) string {
 		have[s[r]]++
 		for ; count == tLen; l++ {
 			if r-l < minLen {
-				minLen = r - l
+				minLen = r - l + 1
 				start = l
 			}
 			if have[s[l]] == need[s[l]] {
@@ -2373,7 +2414,9 @@ func subsets(nums []int) [][]int {
 	return ans
 }
 
-// 79
+// wjq: dfs返回值问题
+// 只需找到一个结果时，可设置dfs返回值为bool，当为true时结束搜索
+// 79 剑指offer12
 func exist1(board [][]byte, word string) bool {
 	flag := false
 	m, n := len(board), len(board[0])
@@ -2534,7 +2577,9 @@ func deleteDuplicates83(head *ListNode) *ListNode {
 	return head
 }
 
-// 84
+// 84 忘记抄的谁的了，别人都是heights都是前后各加一个0，他只在最后加了个0，然后stack中加了个-1的索引
+// 很机智。。。
+// 额。。。好像是我写的？
 func largestRectangleArea(heights []int) int {
 	max := func(x, y int) int {
 		if x > y {
@@ -2546,6 +2591,30 @@ func largestRectangleArea(heights []int) int {
 	n := len(heights)
 	stack := make([]int, 0)
 	stack = append(stack, -1)
+	ans := 0
+	for i := 0; i < n; i++ {
+		for len(stack) > 1 && heights[i] < heights[stack[len(stack)-1]] {
+			curHeight := heights[stack[len(stack)-1]]
+			stack = stack[:len(stack)-1]
+			curWidth := i - stack[len(stack)-1] - 1
+			ans = max(ans, curWidth*curHeight)
+		}
+		stack = append(stack, i)
+	}
+	return ans
+}
+
+func largestRectangleArea1(heights []int) int {
+	max := func(x, y int) int {
+		if x > y {
+			return x
+		}
+		return y
+	}
+	heights = append(heights, 0)
+	heights = append([]int{0}, heights...)
+	n := len(heights)
+	stack := make([]int, 0)
 	ans := 0
 	for i := 0; i < n; i++ {
 		for len(stack) > 1 && heights[i] < heights[stack[len(stack)-1]] {
@@ -2958,23 +3027,23 @@ func isSameTree(p *TreeNode, q *TreeNode) bool {
 	}
 	return isSameTree(p.Left, q.Left) && isSameTree(p.Right, q.Right)
 }
-func main() {
-	t1 := &TreeNode{
-		Val:   1,
-		Left:  nil,
-		Right: nil,
-	}
-	t2 := &TreeNode{
-		Val:   2,
-		Left:  nil,
-		Right: nil,
-	}
-	t3 := &TreeNode{
-		Val:   3,
-		Left:  nil,
-		Right: nil,
-	}
-	t1.Left = t3
-	t3.Right = t2
-	recoverTree(t1)
-}
+//func main() {
+//	t1 := &TreeNode{
+//		Val:   1,
+//		Left:  nil,
+//		Right: nil,
+//	}
+//	t2 := &TreeNode{
+//		Val:   2,
+//		Left:  nil,
+//		Right: nil,
+//	}
+//	t3 := &TreeNode{
+//		Val:   3,
+//		Left:  nil,
+//		Right: nil,
+//	}
+//	t1.Left = t3
+//	t3.Right = t2
+//	recoverTree(t1)
+//}

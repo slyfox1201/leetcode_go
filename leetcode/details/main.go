@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"math"
-	"math/bits"
 	"time"
 	"unsafe"
 )
@@ -28,11 +27,11 @@ func stringDemo() {
 	fmt.Println("app2 run time", elapsed2)
 }
 
-// arr是值传递，值是一个地址
-// 虽然slice传递了arr的地址，给形参赋值，不影响原参数的值
+// arr是切片结构体，即一个指向底层数组的指针，一个len，一个cap，结构体
+// 是复制传递，因此只改变了形参结构体的值，原结构体未改变
 func sliceDemo(arr []int) {
-	arr = append(arr, 0, 0, 0)
-	//arr = arr[:len(arr) - 1] // 删减同理
+	//arr = append(arr, 0, 0, 0) // 此句会改变底层数组和形参结构体
+	arr = arr[:len(arr) - 1] // 此句只改变形参结构体
 	fmt.Println(arr)
 }
 
@@ -61,7 +60,10 @@ func xorDemo() {
 	fmt.Printf("%b\n", res)
 }
 
+// dfs对比lc47全排列与lc90子集
+
 func main() {
-	res := uint(0b01000000)
-	fmt.Println(bits.TrailingZeros(res))
+	//res := uint(0b01000000)
+	//fmt.Println(bits.TrailingZeros(res))
+	runSliceDemo()
 }
