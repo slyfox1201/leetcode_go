@@ -1,10 +1,18 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 func main() {
-	ans := make([]int, 0)
-	fmt.Printf("%p", &ans)
-	var a []int
-	fmt.Printf("%p", &a)
+	str := "abcdefg"
+	arr := make([]byte, 0)
+	for i := range str {
+		arr = append(arr, str[i])
+	}
+	fmt.Println(string(arr))
+	for i, s := range strings.Split(str, "") {
+		fmt.Println(i, s)
+	}
 }
